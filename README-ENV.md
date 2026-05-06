@@ -35,7 +35,7 @@ export const localConfig = {
 When running `npm run build`, the app uses `src/config/production.ts`:
 
 - **API Base URL**: Set via `VITE_API_BASE_URL` environment variable or defaults to config
-- **OAuth2 Callback**: `https://essleman-se.github.io/user-management-UI/oauth2/callback`
+- **OAuth2 Callback**: `https://essleman-se.github.io/trans-mgmt-sys/oauth2/callback`
 
 ### To set production API URL:
 

@@ -10,7 +10,7 @@ export function frontendContextHeaders(): Record<string, string> {
   if (typeof window === 'undefined') {
     return headers;
   }
-  const basePath = (import.meta.env.BASE_URL || '/user-management-UI').replace(/\/$/, '');
+  const basePath = (import.meta.env.BASE_URL || '/trans-mgmt-sys').replace(/\/$/, '');
   headers['X-Frontend-Base-URL'] = `${window.location.origin}${basePath}`;
   return headers;
 }
