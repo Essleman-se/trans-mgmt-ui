@@ -1,9 +1,48 @@
 import { useState, useEffect } from 'react';
-import { getApiUrl } from '../../utils/api';
+import {
+  authFetch,
+  emailFromAuthToken,
+  getApiUrl,
+  isAuthRedirectResponse,
+} from '../../utils/api';
+import { normalizeEmail } from '../../utils/email';
 
 interface UserCountProps {
   isAuthenticated: boolean;
   compact?: boolean; // For navbar display
+}
+
+async function fetchUserByEmail(email: string): Promise<Response> {
+  const apiUrl = `${getApiUrl('/api/users/by-email')}?email=${encodeURIComponent(email)}`;
+  return authFetch(apiUrl, { method: 'GET' });
+}
+
+async function parseUserResponse(response: Response): Promise<Record<string, unknown>> {
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await response.text();
+    if (response.status === 404) {
+      throw new Error(`User account not found for ${response.url}`);
+    }
+    throw new Error(
+      text
+        ? `Unexpected server response (${response.status}): ${text.slice(0, 120)}`
+        : `Unexpected server response (${response.status})`,
+    );
+  }
+
+  if (!response.ok) {
+    let errorMessage = `HTTP error! status: ${response.status}`;
+    try {
+      const errorData = (await response.json()) as { message?: string };
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // use default message
+    }
+    throw new Error(errorMessage);
+  }
+
+  return (await response.json()) as Record<string, unknown>;
 }
 
 const UserCount = ({ isAuthenticated, compact = false }: UserCountProps) => {
@@ -22,126 +61,46 @@ const UserCount = ({ isAuthenticated, compact = false }: UserCountProps) => {
         setLoading(true);
         setError(null);
 
-        const email = localStorage.getItem('userEmail');
         const token = localStorage.getItem('token');
-        
-        if (!email) {
-          throw new Error('No user email found');
+        const storedEmail = localStorage.getItem('userEmail')?.trim() || '';
+        const tokenEmail = emailFromAuthToken(token);
+        const lookupEmail = tokenEmail || (storedEmail ? normalizeEmail(storedEmail) : '');
+
+        if (!lookupEmail) {
+          throw new Error('No user email found. Please sign in again.');
+        }
+        if (!token) {
+          throw new Error('Your session has expired. Please sign in again.');
         }
 
-        // Try GET with query parameter first
-        // Use getApiUrl to handle both dev and production environments
-        const apiUrl = `${getApiUrl('/api/users/by-email')}?email=${encodeURIComponent(email)}`;
-        console.log('Fetching user info from:', apiUrl);
+        let response = await fetchUserByEmail(lookupEmail);
 
-        const headers: HeadersInit = {
-          'Accept': 'application/json',
-        };
-
-        // Add token if available
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+        if (isAuthRedirectResponse(response)) {
+          throw new Error('Your session has expired. Please sign in again.');
         }
 
-        let response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: headers,
-        });
-
-        let contentType = response.headers.get('content-type') || '';
-
-        // If GET returns HTML, try POST with email in body (some APIs require POST)
-        if (!contentType.includes('application/json') && response.status === 200) {
-          console.log('GET returned HTML, trying POST method...');
-          
-          const postHeaders: HeadersInit = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          };
-          
-          if (token) {
-            postHeaders['Authorization'] = `Bearer ${token}`;
+        // Retry with stored email if JWT subject casing differs from localStorage.
+        if (
+          response.status === 404 &&
+          storedEmail &&
+          storedEmail !== lookupEmail
+        ) {
+          const retryResponse = await fetchUserByEmail(storedEmail);
+          if (!isAuthRedirectResponse(retryResponse)) {
+            response = retryResponse;
           }
-
-          response = await fetch(getApiUrl('/api/users/by-email'), {
-            method: 'POST',
-            headers: postHeaders,
-            body: JSON.stringify({ email: email }),
-          });
-
-          contentType = response.headers.get('content-type') || '';
         }
 
-        // Check if response is HTML (error page)
-        if (!contentType.includes('application/json')) {
-          const text = await response.text();
-          console.error('Server returned HTML instead of JSON:', text.substring(0, 200));
-          console.error('Response status:', response.status);
-          console.error('Response headers:', Object.fromEntries(response.headers.entries()));
-          
-          if (response.status === 404) {
-            throw new Error(`Endpoint not found: /api/users/by-email. Please verify the API endpoint exists.`);
-          }
-          
-          throw new Error(
-            `Server returned HTML instead of JSON (Status: ${response.status}). ` +
-            `This usually means the endpoint doesn't exist or there's a server configuration issue. ` +
-            `Check if the endpoint: http://localhost:8080/api/users/by-email exists. ` +
-            `Also check browser console and Network tab for CORS errors.`
-          );
-        }
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            // User not found - might be a new OAuth2 user
-            // Try to get user info from token-based endpoint instead
-            if (token) {
-              console.log('User not found by email, trying token-based endpoint...');
-              try {
-                const meResponse = await fetch(getApiUrl('/api/users/me'), {
-                  method: 'GET',
-                  headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                  },
-                });
-
-                if (meResponse.ok) {
-                  const contentType = meResponse.headers.get('content-type');
-                  if (contentType && contentType.includes('application/json')) {
-                    const meData = await meResponse.json();
-                    setUserInfo(meData);
-                    return; // Successfully got user info from /me endpoint
-                  }
-                }
-              } catch (meErr) {
-                console.warn('Could not fetch from /api/users/me:', meErr);
-              }
-            }
-            
-            // If /me endpoint also fails, create a basic user info from email
-            console.log('Creating basic user info from email for new OAuth2 user');
-            setUserInfo({
-              email: email,
-              name: email.split('@')[0], // Use email prefix as name
-            });
-            return; // Don't throw error, use basic info
-          }
-          let errorMessage = `HTTP error! status: ${response.status}`;
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
-          } catch {
-            // If JSON parsing fails, use default message
-          }
-          throw new Error(errorMessage);
-        }
-
-        const data = await response.json();
-        // Store all data from API
+        const data = await parseUserResponse(response);
         setUserInfo(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch user information');
+        const message =
+          err instanceof TypeError && err.message === 'Failed to fetch'
+            ? 'Unable to reach the server. Make sure the backend is running on port 8080.'
+            : err instanceof Error
+              ? err.message
+              : 'Failed to fetch user information';
+        setError(message);
         console.error('Error fetching user info:', err);
       } finally {
         setLoading(false);
@@ -166,12 +125,14 @@ const UserCount = ({ isAuthenticated, compact = false }: UserCountProps) => {
       );
     }
 
-    // For compact view, show avatar even if there's an error or no userInfo
-    // Use email from localStorage as fallback
     const email = localStorage.getItem('userEmail') || '';
-    const displayName = userInfo 
-      ? ((userInfo.name as string) || (userInfo.username as string) || email.split('@')[0] || 'User')
-      : (email.split('@')[0] || 'User');
+    const displayName = userInfo
+      ? ((userInfo.firstName as string) ||
+          (userInfo.name as string) ||
+          (userInfo.username as string) ||
+          email.split('@')[0] ||
+          'User')
+      : email.split('@')[0] || 'User';
 
     return (
       <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-indigo-600 font-semibold text-sm shrink-0">
@@ -242,4 +203,3 @@ const UserCount = ({ isAuthenticated, compact = false }: UserCountProps) => {
 };
 
 export default UserCount;
-

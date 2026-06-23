@@ -95,7 +95,9 @@ function RedirectHandler() {
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => Boolean(localStorage.getItem('token') && localStorage.getItem('userEmail')),
+  )
 
   const handleLogin = useCallback(() => {
     setIsAuthenticated(true)
@@ -140,7 +142,7 @@ function App() {
         <Route path="/index.html" element={<RedirectHandler />} />
         </Routes>
       </main>
-      <Footer />
+      <Footer isAuthenticated={isAuthenticated} />
     </div>
   )
 }

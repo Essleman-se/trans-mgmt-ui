@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 
-const Footer = () => {
+interface FooterProps {
+  isAuthenticated?: boolean;
+}
+
+const Footer = ({ isAuthenticated = false }: FooterProps) => {
   const year = new Date().getFullYear();
 
   return (
@@ -26,9 +30,15 @@ const Footer = () => {
             <Link to="/contact" className="transition-colors hover:text-white">
               Contact
             </Link>
-            <Link to="/login" className="transition-colors hover:text-indigo-300">
-              Sign in
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/user-account" className="transition-colors hover:text-indigo-300">
+                Account
+              </Link>
+            ) : (
+              <Link to="/login" className="transition-colors hover:text-indigo-300">
+                Sign in
+              </Link>
+            )}
           </nav>
         </div>
         <div className="mt-8 border-t border-slate-800/80 pt-6 text-center">
