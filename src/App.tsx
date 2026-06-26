@@ -24,9 +24,21 @@ function RedirectHandler() {
   useEffect(() => {
     // Only redirect once to prevent loops
     if (hasRedirectedRef.current) return;
-    
+
     const pathname = location.pathname;
     const search = location.search;
+    const params = new URLSearchParams(search);
+    const spaPath = params.get('__spa_path');
+
+    // GitHub Pages 404.html preserves the intended SPA route in __spa_path
+    if (spaPath) {
+      hasRedirectedRef.current = true;
+      params.delete('__spa_path');
+      const remaining = params.toString();
+      navigate(spaPath + (remaining ? `?${remaining}` : '') + location.hash, { replace: true });
+      return;
+    }
+
     const hasToken = search.includes('token=');
     const hasCode = search.includes('code=');
     const hasEmail = search.includes('email=');
@@ -59,15 +71,13 @@ function RedirectHandler() {
     }
     
     if (isIndexPage && hasToken) {
-      // Check if this is an OAuth2 callback (has email and/or role params) or email verification
+      // Legacy fallback: token-only links from old 404 redirects (verify-email only)
       if (hasEmail || hasRole || hasCode) {
-        // OAuth2 callback - redirect to /oauth2/callback
         console.log('RedirectHandler: Detected OAuth2 callback, redirecting to /oauth2/callback');
         hasRedirectedRef.current = true;
         navigate('/oauth2/callback' + search + location.hash, { replace: true });
       } else {
-        // Email verification - redirect to /verify-email
-        console.log('RedirectHandler: Detected email verification, redirecting to /verify-email');
+        console.log('RedirectHandler: Detected email verification token, redirecting to /verify-email');
         hasRedirectedRef.current = true;
         navigate('/verify-email' + search + location.hash, { replace: true });
       }
