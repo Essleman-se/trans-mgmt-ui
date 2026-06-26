@@ -6,13 +6,21 @@
     <title>Redirecting...</title>
     <script>
       // GitHub Pages 404.html workaround for SPA routing.
-      // Derive the repo base path from the current URL (e.g. /trans-mgmt-ui/verify-email → /trans-mgmt-ui).
-      const search = window.location.search;
+      // Preserve the intended route (e.g. /reset-password, /verify-email) when redirecting to index.html.
+      const pathname = window.location.pathname;
       const hash = window.location.hash;
-      const parts = window.location.pathname.split('/').filter(Boolean);
+      const parts = pathname.split('/').filter(Boolean);
       const basePath = parts.length > 0 ? '/' + parts[0] : '';
+      const routeParts = parts.slice(1);
+      const route = routeParts.length > 0 ? '/' + routeParts.join('/') : '';
 
-      window.location.replace(basePath + '/index.html' + search + hash);
+      const params = new URLSearchParams(window.location.search);
+      if (route && route !== '/index.html') {
+        params.set('__spa_path', route);
+      }
+      const newSearch = params.toString() ? '?' + params.toString() : '';
+
+      window.location.replace(basePath + '/index.html' + newSearch + hash);
     </script>
   </head>
   <body>
