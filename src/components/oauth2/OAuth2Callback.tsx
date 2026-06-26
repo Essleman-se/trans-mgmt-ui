@@ -58,7 +58,7 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
                   // Get frontend origin from sessionStorage (stored before OAuth2 redirect)
                   // Fallback to current origin if not found (shouldn't happen in normal flow)
                   const frontendOrigin = sessionStorage.getItem('oauth2_frontend_origin') || window.location.origin;
-                  const basePath = import.meta.env.BASE_URL || '/trans-mgmt-sys';
+                  const basePath = import.meta.env.BASE_URL || '/trans-mgmt-ui';
                   const callbackPath = basePath.endsWith('/') ? 'oauth2/callback' : '/oauth2/callback';
                   const frontendCallbackUrl = `${frontendOrigin}${basePath}${callbackPath}?token=${encodeURIComponent(data.token)}${data.email ? `&email=${encodeURIComponent(data.email)}` : ''}`;
                   console.log('Redirecting to frontend callback with token:', frontendCallbackUrl);
@@ -77,7 +77,7 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
                   const email = urlParams.get('email');
                   // Get frontend origin from sessionStorage
                   const frontendOrigin = sessionStorage.getItem('oauth2_frontend_origin') || window.location.origin;
-                  const basePath = import.meta.env.BASE_URL || '/trans-mgmt-sys';
+                  const basePath = import.meta.env.BASE_URL || '/trans-mgmt-ui';
                   const callbackPath = basePath.endsWith('/') ? 'oauth2/callback' : '/oauth2/callback';
                   const frontendCallbackUrl = `${frontendOrigin}${basePath}${callbackPath}?token=${encodeURIComponent(token)}${email ? `&email=${encodeURIComponent(email)}` : ''}`;
                   console.log('Redirecting to frontend callback with token from URL:', frontendCallbackUrl);

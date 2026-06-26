@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { getApiUrl } from '../../utils/api';
 import { messageFromApiErrorBody } from '../../utils/apiErrors';
 import { normalizeEmail } from '../../utils/email';
+import { frontendContextHeaders } from '../../utils/frontendRequestHints';
 
 interface RegisterFormData {
   firstName: string;
@@ -69,9 +70,7 @@ const Register = () => {
     try {
       const response = await fetch(getApiUrl('/api/auth/register'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: frontendContextHeaders(),
         body: JSON.stringify({
           firstName: first,
           lastName: last,

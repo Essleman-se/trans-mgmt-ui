@@ -7,7 +7,7 @@ export default defineConfig({
   // Only use base path in production builds, not in development
   // This allows email links to work in both dev and production
   // In dev: base is "/" so links like /verify-email work directly
-  // In prod: base is "/trans-mgmt-sys" for GitHub Pages
+  // In prod: base is "/trans-mgmt-ui" for GitHub Pages
   "base": "/trans-mgmt-ui",
   server: {
     proxy: {

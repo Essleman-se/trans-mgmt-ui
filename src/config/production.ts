@@ -20,20 +20,20 @@ export const productionConfig = {
     // Frontend base URL for production (GitHub Pages)
     baseUrl: 'https://essleman-se.github.io',
     // Frontend base path for GitHub Pages
-    basePath: '/trans-mgmt-sys',
+    basePath: '/trans-mgmt-ui',
   },
   
   // OAuth2 Configuration
   oauth2: {
     // Frontend callback URL for production (GitHub Pages)
-    callbackUrl: 'https://essleman-se.github.io/trans-mgmt-sys/oauth2/callback',
+    callbackUrl: 'https://essleman-se.github.io/trans-mgmt-ui/oauth2/callback',
   },
   
   // Email Verification Configuration
   emailVerification: {
     // Frontend verification URL for production
     // Backend should use this when generating email verification links
-    verificationUrl: 'https://essleman-se.github.io/trans-mgmt-sys/verify-email',
+    verificationUrl: 'https://essleman-se.github.io/trans-mgmt-ui/verify-email',
   },
   
   // Environment

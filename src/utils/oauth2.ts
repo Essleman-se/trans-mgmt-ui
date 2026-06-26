@@ -40,7 +40,7 @@ export const getOAuth2AuthorizationUrl = async (
   options?: { prompt?: string }
 ): Promise<string> => {
   try {
-    const basePath = import.meta.env.BASE_URL || '/trans-mgmt-sys';
+    const basePath = import.meta.env.BASE_URL || '/trans-mgmt-ui';
     const callbackPath = basePath.endsWith('/') ? 'oauth2/callback' : '/oauth2/callback';
     const redirectUri = `${window.location.origin}${basePath}${callbackPath}`;
     const params = new URLSearchParams({
@@ -189,7 +189,7 @@ export const initiateOAuth2Login = async (provider: OAuth2Provider): Promise<voi
 /** Same redirect_uri as authorization request (must match exactly for Google). */
 export const getOAuth2RedirectUri = (): string => {
   const frontendOrigin = sessionStorage.getItem('oauth2_frontend_origin') || window.location.origin;
-  const basePath = import.meta.env.BASE_URL || '/trans-mgmt-sys';
+  const basePath = import.meta.env.BASE_URL || '/trans-mgmt-ui';
   const callbackPath = basePath.endsWith('/') ? 'oauth2/callback' : '/oauth2/callback';
   return `${frontendOrigin}${basePath}${callbackPath}`;
 };

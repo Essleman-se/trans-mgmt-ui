@@ -17,21 +17,21 @@ export const localConfig = {
   frontend: {
     // Frontend base URL for local development
     baseUrl: 'http://localhost:5173',
-    // Frontend base path (matches Vite config base: "/trans-mgmt-sys")
-    basePath: '/trans-mgmt-sys',
+    // Frontend base path (matches Vite config base: "/trans-mgmt-ui")
+    basePath: '/trans-mgmt-ui',
   },
   
   // OAuth2 Configuration
   oauth2: {
     // Frontend callback URL for local development (includes base path)
-    callbackUrl: 'http://localhost:5173/trans-mgmt-sys/oauth2/callback',
+    callbackUrl: 'http://localhost:5173/trans-mgmt-ui/oauth2/callback',
   },
   
   // Email Verification Configuration
   emailVerification: {
     // Frontend verification URL for local development (includes base path)
     // Backend uses this when generating email verification links
-    verificationUrl: 'http://localhost:5173/trans-mgmt-sys/verify-email',
+    verificationUrl: 'http://localhost:5173/trans-mgmt-ui/verify-email',
   },
   
   // Environment

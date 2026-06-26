@@ -32,7 +32,7 @@ function RedirectHandler() {
     const hasEmail = search.includes('email=');
     const hasRole = search.includes('role=');
     const isIndexPage = pathname === '/index.html';
-    const basePath = import.meta.env.BASE_URL || '/trans-mgmt-sys';
+    const basePath = import.meta.env.BASE_URL || '/trans-mgmt-ui';
     
     // Handle direct access to /verify-email without base path (from email links)
     if (pathname === '/verify-email' && hasToken && !pathname.startsWith(basePath)) {

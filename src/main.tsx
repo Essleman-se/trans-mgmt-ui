@@ -6,8 +6,8 @@ import App from './App.tsx'
 
 // Get base path from Vite config
 // Backend now includes the base path in email verification links
-// Both development and production use "/trans-mgmt-sys" base path
-const basePath = import.meta.env.BASE_URL || '/trans-mgmt-sys';
+// Both development and production use "/trans-mgmt-ui" base path
+const basePath = import.meta.env.BASE_URL || '/trans-mgmt-ui';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
