@@ -12,7 +12,9 @@ export const productionConfig = {
     // Production backend URL
     // Priority: 1. VITE_API_BASE_URL env variable, 2. Default from config
     // Set VITE_API_BASE_URL before building: VITE_API_BASE_URL=https://api.example.com npm run build
-    baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+    baseUrl:
+      import.meta.env.VITE_API_BASE_URL ||
+      'https://trans-mgmt-backend-prod-f9c317c03601.herokuapp.com',
   },
   
   // Frontend Configuration
