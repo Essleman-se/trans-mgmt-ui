@@ -3,16 +3,21 @@
  * Handles API base URL for both development and production environments
  */
 
-import config from '../config';
+const PRODUCTION_API_BASE_URL =
+  'https://trans-mgmt-backend-prod-f9c317c03601.herokuapp.com';
 
 /**
  * Get the API base URL based on the environment
- * - In development: Uses relative paths (proxied by Vite to localhost:8080)
- * - In production: Uses the actual backend URL from config
+ * - In development: empty string (relative /api/* proxied by Vite to localhost:8080)
+ * - In production: Heroku backend URL from VITE_API_BASE_URL or hardcoded default
  */
 export const getApiBaseUrl = (): string => {
-  // Use configuration from config module
-  return config.api.baseUrl;
+  if (import.meta.env.DEV) {
+    return '';
+  }
+
+  const fromEnv = import.meta.env.VITE_API_BASE_URL?.trim();
+  return fromEnv || PRODUCTION_API_BASE_URL;
 };
 
 /**
