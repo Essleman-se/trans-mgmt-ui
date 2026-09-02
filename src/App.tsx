@@ -12,6 +12,8 @@ import ForgotPassword from './components/forgot-password/ForgotPassword'
 import ResetPassword from './components/reset-password/ResetPassword'
 import ContactUs from './components/contact-us/ContactUs'
 import Footer from './components/footer/Footer'
+import UserManagementPage from './components/admin/user-management/UserManagementPage'
+import { clearUserRole, isAdmin } from './utils/authRole'
 
 // Component to handle GitHub Pages 404 redirects from index.html
 // Also handles direct access to routes without base path (for email verification links)
@@ -118,6 +120,7 @@ function App() {
     // Clear token and email from localStorage
     localStorage.removeItem('token')
     localStorage.removeItem('userEmail')
+    clearUserRole()
     console.log('User logged out')
   }
 
@@ -145,6 +148,23 @@ function App() {
               <Navigate to="/login" replace />
             )
           } 
+        />
+        <Route
+          path="/admin/users"
+          element={
+            !isAuthenticated ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin() ? (
+              <UserManagementPage />
+            ) : (
+              <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <h1 className="text-3xl font-bold text-slate-900">Access denied</h1>
+                <p className="mt-4 text-slate-600">
+                  You do not have permission to view this page. Admin access is required.
+                </p>
+              </div>
+            )
+          }
         />
         <Route path="/about" element={<div className="p-8"><h1 className="text-3xl font-bold">About</h1><p className="mt-4">About page coming soon...</p></div>} />
         <Route path="/contact" element={<ContactUs variant="page" />} />

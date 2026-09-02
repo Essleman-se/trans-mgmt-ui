@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getApiUrl, getApiBaseUrl } from '../../utils/api';
+import { syncUserRoleFromLogin } from '../../utils/authRole';
 import { exchangeOAuth2AuthorizationCode, type OAuth2Provider } from '../../utils/oauth2';
 
 interface OAuth2CallbackProps {
@@ -16,6 +17,7 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
   const [oauth2Email, setOauth2Email] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
   const [token, setToken] = useState<string>('');
+  const [oauthRole, setOauthRole] = useState<string>('');
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -101,6 +103,7 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
         const errorParam = searchParams.get('error');
         const tokenFromUrl = searchParams.get('token');
         const emailFromUrl = searchParams.get('email');
+        const roleFromUrl = searchParams.get('role');
 
         // Check for OAuth2 error from backend redirect
         if (errorParam) {
@@ -120,6 +123,9 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
           const email = emailFromUrl || '';
           setOauth2Email(email);
           setUserEmail(email);
+          if (roleFromUrl) {
+            setOauthRole(roleFromUrl);
+          }
           
           // Always show email input to allow user to confirm/change it
           console.log('Showing email confirmation screen');
@@ -154,6 +160,15 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
           console.log('Email from OAuth2 callback:', emailFromOAuth);
           setOauth2Email(emailFromOAuth);
           setUserEmail(emailFromOAuth);
+          const roleFromExchange =
+            typeof data.role === 'string'
+              ? data.role
+              : typeof data.user?.role === 'string'
+                ? data.user.role
+                : '';
+          if (roleFromExchange) {
+            setOauthRole(roleFromExchange);
+          }
           
           // Always show email input to allow user to confirm/change it
           console.log('Showing email confirmation screen');
@@ -184,6 +199,9 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
                 const emailFromOAuth = typeof rawEmail === 'string' ? rawEmail : '';
                 setOauth2Email(emailFromOAuth);
                 setUserEmail(emailFromOAuth);
+                if (typeof successData.role === 'string') {
+                  setOauthRole(successData.role);
+                }
                 setShowEmailInput(true);
                 setLoading(false);
                 return;
@@ -290,6 +308,7 @@ const OAuth2Callback = ({ onLoginSuccess }: OAuth2CallbackProps) => {
         localStorage.setItem('token', token);
       }
       localStorage.setItem('userEmail', userEmail.trim());
+      syncUserRoleFromLogin({ token, role: oauthRole || undefined });
 
       // Call success callback if provided (this sets isAuthenticated to true)
       if (onLoginSuccess) {

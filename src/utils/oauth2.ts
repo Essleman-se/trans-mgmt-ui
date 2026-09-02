@@ -198,6 +198,7 @@ export type OAuth2CallbackResponse = {
   token: string;
   user?: Record<string, unknown>;
   email?: string;
+  role?: string;
 };
 
 /**

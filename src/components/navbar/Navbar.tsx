@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import UserCount from '../user-count/UserCount';
+import { isAdmin } from '../../utils/authRole';
 
 interface NavbarProps {
   isAuthenticated?: boolean;
@@ -37,6 +38,11 @@ const Navbar = ({ isAuthenticated = false, onLogout }: NavbarProps) => {
                 {item.label}
               </Link>
             ))}
+            {isAuthenticated && isAdmin() && (
+              <Link to="/admin/users" className={linkBase}>
+                User Management
+              </Link>
+            )}
           </div>
 
           {/* Auth — desktop */}
@@ -155,6 +161,15 @@ const Navbar = ({ isAuthenticated = false, onLogout }: NavbarProps) => {
                 {item.label}
               </Link>
             ))}
+            {isAuthenticated && isAdmin() && (
+              <Link
+                to="/admin/users"
+                className="block rounded-md px-3 py-2.5 text-base font-medium text-slate-700 hover:bg-white hover:text-indigo-700"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                User Management
+              </Link>
+            )}
             {!isAuthenticated ? (
               <>
                 <Link

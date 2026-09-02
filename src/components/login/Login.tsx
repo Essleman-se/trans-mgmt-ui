@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import OAuth2Buttons from '../oauth2/OAuth2Buttons';
 import { getApiUrl } from '../../utils/api';
+import { syncUserRoleFromLogin } from '../../utils/authRole';
 import { messageFromApiErrorBody } from '../../utils/apiErrors';
 import { normalizeEmail } from '../../utils/email';
 
@@ -94,11 +95,12 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
     setInfoMessage(null);
   };
 
-  const completeLoginSuccess = (email: string, data: { token?: string }) => {
+  const completeLoginSuccess = (email: string, data: { token?: string; role?: string }) => {
     if (data.token) {
       localStorage.setItem('token', data.token);
     }
     localStorage.setItem('userEmail', email);
+    syncUserRoleFromLogin(data);
     if (onLoginSuccess) {
       onLoginSuccess();
     }
@@ -226,6 +228,10 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
         localStorage.setItem('token', data.token);
       }
       localStorage.setItem('userEmail', email);
+      syncUserRoleFromLogin({
+        token: typeof data.token === 'string' ? data.token : undefined,
+        role: typeof data.role === 'string' ? data.role : undefined,
+      });
       if (onLoginSuccess) {
         onLoginSuccess();
       }
@@ -290,7 +296,7 @@ const Login = ({ onLoginSuccess }: LoginProps) => {
         throw new Error(`Expected JSON but got: ${contentType}. Response: ${text.substring(0, 100)}`);
       }
 
-      const data = (await response.json()) as { token?: string };
+      const data = (await response.json()) as { token?: string; role?: string };
       console.log('Login verify successful:', data);
       completeLoginSuccess(pendingEmail, data);
     } catch (err) {
